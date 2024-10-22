@@ -41,3 +41,22 @@ jobs:
       with:
         name: output-pdf
         path: output.pdf
+        
+    - name: Create Release
+      id: create_release
+      uses: softprops/action-gh-release@v1
+      with:
+        tag_name: v1.0.0  # Specify the tag name for the release
+        release_name: Release v1.0.0  # Specify the release name
+        draft: false  # Set to true if you want to create a draft release
+        prerelease: false  # Set to true if this is a pre-release
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # GitHub automatically provides this token
+
+    - name: Upload PDF to Release
+      uses: softprops/action-gh-release@v1
+      with:
+        tag_name: v1.0.0  # Same tag name as above
+        files: output.pdf  # The PDF file to upload
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # GitHub automatically provides this token
