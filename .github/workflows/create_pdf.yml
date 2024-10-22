@@ -42,24 +42,19 @@ jobs:
         name: output-pdf
         path: output.pdf
         
-    - name: Get current version
-      id: get_version
-      run: echo "VERSION=$(echo '${GITHUB_REF}' | sed -E 's/refs\/tags\/v//')" >> $GITHUB_ENV
+    - name: Get current date
+      id: get_date
+      run: echo "RELEASE_DATE=$(date +'%Y-%m-%d')" >> $GITHUB_ENV
 
-    - name: Increment version
-      id: increment_version
-      run: |
-        IFS='.' read -r major minor patch <<< "$VERSION"
-        patch=$((patch + 1))  # Increment the patch version
-        new_version="$major.$minor.$patch"
-        echo "NEW_VERSION=v$new_version" >> $GITHUB_ENV
+    - name: Debug Release Date
+      run: echo "Release Date: ${{ env.RELEASE_DATE }}"
 
     - name: Create Release
       id: create_release
       uses: softprops/action-gh-release@v1
       with:
-        tag_name: ${{ env.NEW_VERSION }}  # Use the incremented tag name
-        release_name: Release ${{ env.NEW_VERSION }}  # Use the incremented release name
+        tag_name: ${{ env.RELEASE_DATE }}  # Use the current date as the tag name
+        name: Release ${{ env.RELEASE_DATE }}  # Use the current date as the release name
         draft: false  # Set to true if you want to create a draft release
         prerelease: false  # Set to true if this is a pre-release
       env:
@@ -68,7 +63,7 @@ jobs:
     - name: Upload PDF to Release
       uses: softprops/action-gh-release@v1
       with:
-        tag_name: ${{ env.NEW_VERSION }}  # Same incremented tag name
+        tag_name: ${{ env.RELEASE_DATE }}  # Use the current date as the tag name
         files: output.pdf  # The PDF file to upload
       env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # GitHub automatically provides this token
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # GitHub automatically provides
