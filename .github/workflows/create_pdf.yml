@@ -46,9 +46,6 @@ jobs:
       id: get_date
       run: echo "RELEASE_DATE=$(date +'%Y-%m-%d')" >> $GITHUB_ENV
 
-    - name: Debug Release Date
-      run: echo "Release Date: ${{ env.RELEASE_DATE }}"
-
     - name: Create Release
       id: create_release
       uses: softprops/action-gh-release@v1
