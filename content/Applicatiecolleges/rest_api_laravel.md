@@ -4,12 +4,15 @@ weight: 7
 author: Arne Duyver
 draft: false
 ---
-
+## 6: Demo 3
 Verder kunnen we onze laravel website uitbreiden met een eigen REST API gedefinieerd in laravel zelf (of in een andere laravel applicatie die op een andere server draait)
 
-Hiervoor maken we dan wel een LaravelUser model aan omdat we nu effectief de laravel database gaan gebruiken: `php artisan make:model FlaskUser -m`. Met dit commando wordt er ook automatisch een migrationTable en Controller aangemaakt.
+Hiervoor maken we dan wel een LaravelUser model aan omdat we nu effectief de laravel database gaan gebruiken: `php artisan make:model LaravelUser -mcf`. Met dit commando wordt er ook automatisch een migrationTable en Controller aangemaakt.
 
 In de controller gaan we nu dan de functionaliteit van onze REST API programmeren volledig analoog aan onze Flask implementatie alleen moeten we nu PHP specifieke syntax gebruiken:
+<details open>
+    <summary><i><b>Klik hier om de code te zien/verbergen voor `app/Http/LaravelUserController.php`</b></i></summary>
+    <p>
 
 ```php
 <?php
@@ -80,9 +83,16 @@ class LaravelUserController extends Controller
     }
 }
 ```
+</p>
+</details>
 
 Ook het LaravelUser model moet nu correct zijn en bijhorende migration table om de objecten correct op te slaan in de database:
 ### model: `app/Models/LaravelUser.php`
+
+<details open>
+    <summary><i><b>Klik hier om de code te zien/verbergen voor `app/Models/LaravelUser.php``</b></i></summary>
+    <p>
+
 ```php
 <?php
 
@@ -108,7 +118,14 @@ class LaravelUser extends Model
     public $timestamps = true;
 }
 ```
+</p>
+</details>
+
 ### migration `database/migrations/2024_10_14_074850_create_laravel_users_table.php`
+<details open>
+    <summary><i><b>Klik hier om de code te zien/verbergen voor `database/migrations/2024_10_14_074850_create_laravel_users_table.php`</b></i></summary>
+    <p>
+
 ```php
 <?php
 
@@ -144,10 +161,18 @@ return new class extends Migration
 
 ```
 
+</p>
+</details>
+
 ### Routes: api.php
 Ten slotte moeten we onze routes nog definiëren in een nieuwe file `routes/api.php`. Op die manier kunnen we de endpoints bereiken via `www.mijnlaravelwebsite.com/api/...`
 
 De file ziet er als volgt uit:
+
+<details open>
+    <summary><i><b>Klik hier om de code te zien/verbergen voor `routes/api.php`</b></i></summary>
+    <p>
+
 ```php
 <?php
 
@@ -158,8 +183,15 @@ Route::get('/laravelUsers/{id}', [LaravelUserController::class, 'getLaravelUser'
 Route::post('/laravelUsers', [LaravelUserController::class, 'createLaravelUser']);
 Route::delete('/laravelUsers/{id}', [LaravelUserController::class, 'deleteLaravelUser']);
 ```
+</p>
+</details>
 
-We kunnen dan ook een andere view in ons hoofdproject gebruiken dat deze endpoints gebruikt in plaats van de Flask endpoints: `views/laravel_users.blade.php`
+We kunnen nu dan ook een de users view in ons hoofdproject aanpassen en deze endpoints gebruiken in plaats van de Flask endpoints: `views/users.blade.php`
+
+<details open>
+    <summary><i><b>Klik hier om de code te zien/verbergen voor `views/users.blade.php`</b></i></summary>
+    <p>
+
 ```php
 <!DOCTYPE html>
 <html lang="en">
@@ -283,7 +315,16 @@ We kunnen dan ook een andere view in ons hoofdproject gebruiken dat deze endpoin
 </html>
 ```
 
+</p>
+</details>
+
 **Een laatste belangrijke aanpassing die we moeten maken is aan het Laravel project laten weten dat we extra api endpoint hebben toegevoegd.** Dit doe je door de file `app/Providers/AppServiceProvider.php` aan te passen:
+
+
+<details open>
+    <summary><i><b>Klik hier om de code te zien/verbergen voor `app/Providers/AppServiceProvider.php`</b></i></summary>
+    <p>
+
 ```php
 <?php
 
@@ -316,6 +357,10 @@ class AppServiceProvider extends ServiceProvider
 ```
 
 
+</p>
+</details>
+
+
 ## Factory and Seeders
 Je kan Laravel nu ook gebruiken om automatisch wat dummy data te genereren in de database. Hierover vind je meer op volgende website: [FSWEB](https://kuleuven-diepenbeek.github.io/fsweb-course/backend/laravel_code/) of via deze [video](https://www.youtube.com/watch?v=YETNihHReo4)
 
@@ -324,6 +369,10 @@ Je kan Laravel nu ook gebruiken om automatisch wat dummy data te genereren in de
 
 1. Voeg volgende module toe aan het project: `composer require fruitcake/laravel-cors`
 2. Pas volgende file aan of maak hem aan als hij nog niet bestaat: `config/cors.php`
+<details open>
+    <summary><i><b>Klik hier om de code te zien/verbergen voor `config/cors.php`</b></i></summary>
+    <p>
+
 ```php
 <?php
 
@@ -362,7 +411,15 @@ return [
 
 ```
 
+</p>
+</details>
+
 3. Controleer of de CORS-middleware is geregistreerd in de kernel. Open het bestand `app/Http/Kernel.php` en controleer of de CORS-middleware aanwezig is in de api middleware-groep.
+
+<details open>
+    <summary><i><b>Klik hier om de code te zien/verbergen voor `app/Http/Kernel.php`</b></i></summary>
+    <p>
+
 ```php
 protected $middlewareGroups = [
     'api' => [
@@ -371,4 +428,8 @@ protected $middlewareGroups = [
     ],
 ];
 ```
+
+</p>
+</details>
+
 4. Verwijder de cache van configuratiebestanden: `php artisan config:clear`

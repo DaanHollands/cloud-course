@@ -5,6 +5,8 @@ author: Arne Duyver
 draft: false
 ---
 
+## 5: Demo 1
+
 We maken een voorbeeld van een eenvoudige Flask-applicatie die CORS en PyMySQL gebruikt om een REST API te creëren met volledige CRUD-functionaliteit. 
 
 Zorg ervoor dat je de vereiste pakketten installeert:
@@ -14,6 +16,10 @@ pip install Flask flask-cors pymysql
 ```
 
 ## app.py
+<details open>
+    <summary><i><b>Klik hier om de code te zien/verbergen voor `app.py`</b></i></summary>
+    <p>
+
 ```python
 from flask import Flask, render_template_string, request, jsonify
 from flask_cors import CORS
@@ -167,6 +173,9 @@ if __name__ == '__main__':
     # start de flask server op: de host moet 0.0.0.0 zijn om correct te werken met docker
     app.run(host='0.0.0.0', debug=True)
 ```
+
+</p>
+</details>
 
 ## Uitleg:
 **Flask**: Biedt het webframework voor het afhandelen van routes.

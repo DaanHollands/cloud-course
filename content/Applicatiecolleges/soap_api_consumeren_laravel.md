@@ -59,6 +59,9 @@ We gebruiken JavaScript (met fetch) om de Flask REST API op te roepen.
 Maak een nieuwe lay-out als deze niet bestaat en voeg vervolgens de benodigde HTML-structuur en een tijdelijke aanduiding voor de inhoud toe: `views/soap.blade.php`.
 
 Je kan de [Wizdler extentie](https://chromewebstore.google.com/detail/wizdler/oebpmncolmhiapingjaagmapififiakb) gebruiken om na te gaan hoe de body er juist moet uitzien.
+<details open>
+    <summary><i><b>Klik hier om de code te zien/verbergen voor `views/soap.blade.php`</b></i></summary>
+    <p>
 
 ```php
 <!DOCTYPE html>
@@ -149,6 +152,10 @@ Je kan de [Wizdler extentie](https://chromewebstore.google.com/detail/wizdler/oe
 </html>
 ```
 
+</p>
+</details>
+
+
 ### Routes definiëren
 
 Definieer in `routes/web.php` een route om de users view te laden.
@@ -163,97 +170,133 @@ Route::get('/soapTest', function () {
 
 
 ## Call maken vanuit de backend anders CORS problemen
-Dan moeten we een extra endpoint voorzien in de `routes/web.php`:
+### 6: Demo 4
+Dan moeten we een extra endpoint voorzien in de `routes/web.php` en we gaan weer de Guzzle module gebruiken om de call te doen naar de SOAP service (`composer require guzzlehttp/guzzle`):
+
+<details open>
+    <summary><i><b>Klik hier om de code te zien/verbergen voor `routes/web.php`</b></i></summary>
+    <p>
+
 
 ```php
+<?php
+
+use Illuminate\Support\Facades\Route;
 use Illuminate\Http\Request;
+use GuzzleHttp\Client;
 
-...
+Route::get('/', function () {
+    return view('welcome');
+});
 
-Route::post('/soapAdd', function (Request $request) {
+Route::get('/soap', function () {
+    return view('soap');
+});
 
-    $num1 = $request->input('num1');
-    $num2 = $request->input('num2');
-
-    // SOAP request
-    $soapRequest = '
-    <?xml version="1.0" encoding="utf-8"?>
-    <soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
-        <soap:Body>
-            <Add xmlns="http://www.dneonline.com/calculator/">
-                <intA>' . $num1 . '</intA>
-                <intB>' . $num2 . '</intB>
-            </Add>
-        </soap:Body>
-    </soap:Envelope>';
-
-    $url = 'http://www.dneonline.com/calculator.asmx';
-
-    $headers = [
-        'Content-Type: text/xml; charset=utf-8',
-        'SOAPAction: "http://www.dneonline.com/calculator/Add"',
-    ];
-
-    // Make SOAP request
-    $ch = curl_init($url);
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($ch, CURLOPT_POST, true);
-    curl_setopt($ch, CURLOPT_POSTFIELDS, $soapRequest);
-    curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-
-    $response = curl_exec($ch);
-
-    if (curl_errno($ch)) {
-        return response()->json(['error' => 'SOAP request failed: ' . curl_error($ch)], 500);
-    }
-
-    curl_close($ch);
-
-    // Parse the response
-    $xml = simplexml_load_string($response);
-    $namespaces = $xml->getNamespaces(true);
-    $soapBody = $xml->children($namespaces['soap'])->Body;
-    $addResponse = $soapBody->children()->AddResponse;
-    $result = (string)$addResponse->AddResult;
-
-    return response()->json(['result' => $result]);
+Route::get('/soapAdd', function () {
+    $num1 = request('num1');
+    $num2 = request('num2');
+    try {
+        // URL of the SOAP service
+        $wsdl = "http://www.dneonline.com/calculator.asmx?wsdl";
+        
+        // Create a new SoapClient instance
+        $client = new SoapClient($wsdl);
+    
+        // Call the 'Add' method with parameters
+        $params = [
+            'intA' => 1,
+            'intB' => 2,
+        ];
+        
+        // Perform the SOAP request
+        $response = $client->__soapCall('Add', [$params]);
+        
+        // Display the response
+        $result = $response->AddResult;
+         return response()->json(['result' => $result]);
+    } catch (SoapFault $e) {
+        return response()->json(['SOAP Error:' => $e->getMessage()]);
+    }  
 });
 ```
+</p>
+</details>
 
-Now we update the view to maken use of this endpoint:
+Nu updaten we de view om genbruik te maken van dit nieuwe endpoint:
+<details open>
+    <summary><i><b>Klik hier om de code te zien/verbergen voor `views/soap.blade.php`</b></i></summary>
+    <p>
 
 ```php
-...
+<!DOCTYPE html>
+<html lang="en">
 
-<script>
-    async function makeSoapRequest(intA, intB) {
-        try {
-            const response = await fetch('/soapAdd', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                },
-                body: JSON.stringify({ num1: intA, num2: intB })
-            });
-
-            const data = await response.json();
-            if (data.error) {
-                document.getElementById('result').textContent = 'Error: ' + data.error;
-            } else {
-                document.getElementById('result').textContent = `The result of adding ${intA} and ${intB} is: ${data.result}`;
-            }
-        } catch (error) {
-            console.error('Error making SOAP request:', error);
-            document.getElementById('result').textContent = 'Error making SOAP request';
-        }
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SOAP Request Example</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
     }
 
+    input {
+      margin: 5px;
+    }
+
+    #result {
+      margin-top: 20px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+
+<body>
+  <h1>Add Two Numbers Using SOAP</h1>
+  <label for="num1">Number 1:</label>
+  <input type="number" id="num1" value="1"><br>
+
+  <label for="num2">Number 2:</label>
+  <input type="number" id="num2" value="2"><br>
+
+  <button id="addButton">Add</button>
+
+  <div id="result"></div>
+
+  <script>
+    // Function to fetch users and populate the table
+    function test(num1,num2) {
+      var formData = {
+        num1: 1,
+        num2: 2,
+      };
+      // Hier doen we dus een oproep naar het lokale endpoint
+      fetch(`/soapAdd?num1=${num1}&num2=${num2}`)
+      .then(response => response.json())
+      .then(data => {
+        console.log(data.result)
+        document.getElementById('result').innerHTML = data.result
+      })
+      .catch(error => {
+        console.error('Error fetching users:', error)
+        document.getElementById('result').innerHTML = error
+      });
+    }
+
+
     document.getElementById('addButton').addEventListener('click', () => {
-        const num1 = document.getElementById('num1').value;
-        const num2 = document.getElementById('num2').value;
-        makeSoapRequest(num1, num2);
+      const num1 = parseInt(document.getElementById('num1').value, 10);
+      const num2 = parseInt(document.getElementById('num2').value, 10);
+      test(num1, num2);
     });
-</script>
+  </script>
+</body>
+</html>
+
 ```
+
+</p>
+</details>
 
