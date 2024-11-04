@@ -37,7 +37,7 @@ draft: false
 - Voor **webservices** waar snelheid, eenvoud en flexibiliteit belangrijk zijn, zoals in **mobiele applicaties**.
 
 ## SOAP api oproepen in Laravel vanuit de frontend met Javascript
-Om een ​​Laravel-project te maken dat communiceert met de REST API met behulp van JavaScript in de frontend, moeten we volgende zaken doen:
+Om een ​​Laravel-project te maken dat communiceert met de SOAP API met behulp van JavaScript in de frontend, moeten we volgende zaken doen:
 
 1. Laravel project aanmaken
 2. Gebruik JavaScript om de Flask API aan te roepen
